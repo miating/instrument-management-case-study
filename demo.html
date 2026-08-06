@@ -1,63 +1,284 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Instrument Management Demo</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body { background:#f8fafc; color:#0f172a; }
-    .demo-shell { max-width:1180px; margin:0 auto; padding:28px 18px; }
-    .demo-hero { display:flex; justify-content:space-between; gap:20px; align-items:flex-end; margin-bottom:20px; }
-    .demo-hero h1 { font-size:30px; margin:0 0 8px; }
-    .demo-note { color:#64748b; line-height:1.7; max-width:720px; }
-    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:20px 0; }
-    .stat { background:white; border:1px solid #e2e8f0; border-radius:10px; padding:16px; }
-    .stat b { display:block; font-size:28px; color:#2563eb; margin-top:8px; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
-    .card { background:white; border:1px solid #e2e8f0; border-radius:10px; padding:16px; }
-    table { width:100%; border-collapse:collapse; background:white; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; }
-    th,td { padding:12px; border-bottom:1px solid #e2e8f0; text-align:left; }
-    th { background:#f1f5f9; color:#475569; font-size:13px; }
-    .badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:12px; font-weight:700; }
-    .available { background:#dcfce7; color:#166534; }
-    .borrowed { background:#fee2e2; color:#991b1b; }
-    .venue { background:#dbeafe; color:#1d4ed8; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instrument Loan Management - Interactive Demo</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,"Segoe UI",sans-serif;background:#f6f8f9;color:#17202a}
+  main{max-width:1080px;margin:0 auto;padding:30px 20px 70px}
+  .banner{background:#eef5fb;border:1px solid #cfe0ef;color:#2a5273;font-size:12px;padding:9px 13px;border-radius:6px;margin-bottom:18px;line-height:1.55}
+  header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+  .eyebrow{margin:0;color:#667684;font-size:12px;font-weight:650}
+  h1{font-size:26px;margin:5px 0 0}
+  .sub{color:#69777f;font-size:13.5px;margin:8px 0 0;line-height:1.55;max-width:62ch}
+  .back{color:#2259bf;text-decoration:none;font-size:13px;font-weight:700;white-space:nowrap}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px;margin:20px 0}
+  .stat{background:#fff;border:1px solid #dfe4e8;border-radius:7px;padding:15px}
+  .stat span{font-size:11.5px;color:#6a7781}
+  .stat strong{display:block;font-size:26px;margin-top:7px;font-weight:750}
+  .blue{color:#2259bf}.green{color:#16835d}.orange{color:#b86124}.grey{color:#39454f}
+  .tabs{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 0}
+  .tab{font:inherit;font-size:13px;padding:8px 15px;border:1px solid #dbe1e6;background:#fff;color:#4c5a66;border-radius:7px;cursor:pointer}
+  .tab:hover{border-color:#a9bfdd}
+  .tab.active{background:#245fbf;border-color:#245fbf;color:#fff;font-weight:700}
+  .card{background:#fff;border:1px solid #dfe4e8;border-radius:8px;margin-top:14px;overflow:hidden}
+  .chead{padding:14px 17px;border-bottom:1px solid #e7ebee;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .chead h2{font-size:14.5px;margin:0}
+  .chead .note{font-size:11.5px;color:#77848c}
+  .toolbar{display:flex;gap:8px;padding:13px 17px;border-bottom:1px solid #eef1f3;flex-wrap:wrap;align-items:center}
+  input[type=search],select{font:inherit;font-size:13px;padding:8px 11px;border:1px solid #d4dbe0;border-radius:6px;background:#fff;color:inherit}
+  input[type=search]{min-width:220px}
+  .btn{font:inherit;font-size:13px;padding:8px 13px;border-radius:6px;border:1px solid #d4dbe0;background:#fff;color:#43515d;cursor:pointer}
+  .btn.primary{background:#245fbf;border-color:#245fbf;color:#fff;font-weight:700}
+  .wrap{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{padding:11px 16px;text-align:left;border-bottom:1px solid #eef1f3;white-space:nowrap}
+  th{background:#fafbfc;color:#66737d;font-weight:600;font-size:11.5px}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#f6f9fd}
+  .pill{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11px;font-weight:700}
+  .p-available{background:#e7f5ed;color:#1a6c48}
+  .p-invenue{background:#e9effa;color:#2f5ea8}
+  .p-external{background:#fdf1e2;color:#95590f}
+  .p-borrow{background:#fdeceb;color:#a53a34}
+  .p-return{background:#eef1f3;color:#54606d}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px;padding:16px}
+  .tile{border:1px solid #e2e7eb;border-radius:7px;padding:14px;background:#fff;cursor:pointer}
+  .tile:hover{border-color:#a9bfdd;background:#fbfdff}
+  .tile h3{margin:0 0 5px;font-size:14px}
+  .tile p{margin:0;font-size:12px;color:#71808b;line-height:1.5}
+  .qr{width:52px;height:52px;border-radius:6px;background:
+    repeating-linear-gradient(90deg,#17202a 0 5px,#fff 5px 10px),
+    repeating-linear-gradient(0deg,#17202a 0 5px,transparent 5px 10px);
+    background-blend-mode:multiply;margin-bottom:10px;border:3px solid #17202a}
+  .empty{padding:28px 16px;text-align:center;color:#8b96a0;font-size:13px}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:16px}
+  .cal .dow{font-size:11px;color:#77848c;text-align:center;padding-bottom:4px;font-weight:700}
+  .day{border:1px solid #e6eaee;border-radius:6px;min-height:74px;padding:6px;font-size:11px;background:#fff}
+  .day.dim{background:#fafbfc;color:#b3bcc4}
+  .day .n{font-weight:700;color:#4d5b66}
+  .ev{margin-top:4px;background:#e9effa;color:#2f5ea8;border-radius:4px;padding:2px 5px;font-size:10.5px;line-height:1.35;cursor:pointer}
+  .ev.ext{background:#fdf1e2;color:#8a5410}
+  dialog{border:0;border-radius:9px;padding:0;width:min(500px,92vw);box-shadow:0 18px 50px rgba(17,24,39,.25)}
+  dialog::backdrop{background:rgba(17,24,39,.45)}
+  .d-head{padding:16px 20px;border-bottom:1px solid #e8ecef;display:flex;justify-content:space-between;align-items:center}
+  .d-head h3{margin:0;font-size:15px}
+  .d-body{padding:16px 20px}
+  .d-body dl{display:grid;grid-template-columns:125px 1fr;gap:9px 14px;margin:0;font-size:13px}
+  .d-body dt{color:#77848c}.d-body dd{margin:0;font-weight:600}
+  .d-foot{padding:13px 20px;border-top:1px solid #e8ecef;text-align:right}
+  .x{border:0;background:transparent;font-size:20px;color:#8b96a0;cursor:pointer;line-height:1}
+  @media(max-width:720px){h1{font-size:22px}.cal{grid-template-columns:repeat(7,minmax(38px,1fr));overflow-x:auto}}
+</style>
 </head>
 <body>
-  <main class="demo-shell">
-    <section class="demo-hero">
-      <div>
-        <p class="demo-note">Demo Mode · Anonymous sample data</p>
-        <h1>Instrument Loan Management</h1>
-        <p class="demo-note">Demonstrates QR scanning, instrument status tracking, on-site use, external loans, batch returns, and loan history. This page does not connect to Supabase or a production API.</p>
+<main>
+  <div class="banner">Interactive offline demo. Tabs, search, filters and record details all work. Every instrument, borrower and record below is fictional; the demo makes no network request and contains no production API, data model or credential.</div>
+
+  <header class="top">
+    <div>
+      <p class="eyebrow">Deployed system case study</p>
+      <h1>Instrument Loan Management</h1>
+      <p class="sub">A QR-assisted borrowing and return workflow: instruments are scanned in and out, on-site use is separated from external loans, and every movement lands in a searchable record with a forward-looking loan calendar.</p>
+    </div>
+    <a class="back" href="index.html">View workflow overview →</a>
+  </header>
+
+  <section class="stats" id="stats"></section>
+  <div class="tabs" id="tabs"></div>
+  <div id="view"></div>
+</main>
+
+<dialog id="detail">
+  <div class="d-head"><h3 id="d-title">Record</h3><button class="x" id="d-x" aria-label="Close">&times;</button></div>
+  <div class="d-body"><dl id="d-body"></dl></div>
+  <div class="d-foot"><button class="btn" id="d-close">Close</button></div>
+</dialog>
+
+<script>
+const INSTRUMENTS = [
+  { code:'DEMO-V-001', name:'Demo Violin 01', category:'Strings',     status:'Available',   location:'Storage A' },
+  { code:'DEMO-V-002', name:'Demo Violin 02', category:'Strings',     status:'External',    location:'On loan' },
+  { code:'DEMO-V-003', name:'Demo Violin 03', category:'Strings',     status:'Available',   location:'Storage A' },
+  { code:'DEMO-C-001', name:'Demo Cello 01',  category:'Strings',     status:'In venue',    location:'Rehearsal room' },
+  { code:'DEMO-C-002', name:'Demo Cello 02',  category:'Strings',     status:'Available',   location:'Storage A' },
+  { code:'DEMO-F-001', name:'Demo Flute 01',  category:'Woodwind',    status:'Available',   location:'Storage B' },
+  { code:'DEMO-F-002', name:'Demo Flute 02',  category:'Woodwind',    status:'In venue',    location:'Rehearsal room' },
+  { code:'DEMO-K-001', name:'Demo Clarinet 01', category:'Woodwind',  status:'Available',   location:'Storage B' },
+  { code:'DEMO-T-001', name:'Demo Trumpet 01', category:'Brass',      status:'External',    location:'On loan' },
+  { code:'DEMO-D-001', name:'Demo Snare 01',  category:'Percussion',  status:'Available',   location:'Storage C' },
+  { code:'DEMO-D-002', name:'Demo Xylophone 01', category:'Percussion', status:'Available', location:'Storage C' },
+  { code:'DEMO-S-001', name:'Demo Music Stand 01', category:'Accessory', status:'Available', location:'Storage C' },
+];
+const RECORDS = [
+  { at:'2026-08-06 09:12', code:'DEMO-V-002', name:'Demo Violin 02', borrower:'Demo Borrower A', kind:'External', action:'Borrow', note:'Rehearsal use' },
+  { at:'2026-08-06 09:20', code:'DEMO-F-002', name:'Demo Flute 02',  borrower:'Demo Borrower B', kind:'On site',  action:'Borrow', note:'' },
+  { at:'2026-08-06 10:05', code:'DEMO-T-001', name:'Demo Trumpet 01',borrower:'Demo Ensemble X', kind:'External', action:'Borrow', note:'Loaned for a demo performance' },
+  { at:'2026-08-05 17:40', code:'DEMO-V-001', name:'Demo Violin 01', borrower:'Demo Borrower C', kind:'On site',  action:'Return', note:'Condition checked, no damage' },
+  { at:'2026-08-05 16:55', code:'DEMO-C-001', name:'Demo Cello 01',  borrower:'Demo Borrower D', kind:'On site',  action:'Borrow', note:'' },
+  { at:'2026-08-05 14:30', code:'DEMO-D-001', name:'Demo Snare 01',  borrower:'Demo Ensemble Y', kind:'External', action:'Return', note:'Counted back in full' },
+  { at:'2026-08-04 11:10', code:'DEMO-D-002', name:'Demo Xylophone 01', borrower:'Demo Borrower E', kind:'On site', action:'Return', note:'' },
+  { at:'2026-08-04 09:45', code:'DEMO-K-001', name:'Demo Clarinet 01', borrower:'Demo Borrower F', kind:'On site', action:'Return', note:'' },
+];
+const PLANNED = [
+  { from:'2026-08-10', to:'2026-08-12', code:'DEMO-V-001', name:'Demo Violin 01', borrower:'Demo Ensemble X', kind:'External', note:'Scheduled external loan' },
+  { from:'2026-08-14', to:'2026-08-14', code:'DEMO-C-002', name:'Demo Cello 02',  borrower:'Demo Borrower G', kind:'On site',  note:'Reserved for a session' },
+  { from:'2026-08-18', to:'2026-08-19', code:'DEMO-D-002', name:'Demo Xylophone 01', borrower:'Demo Ensemble Y', kind:'External', note:'' },
+];
+
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+const SPILL = { 'Available':'p-available','In venue':'p-invenue','External':'p-external' };
+const APILL = { 'Borrow':'p-borrow','Return':'p-return' };
+
+document.getElementById('stats').innerHTML = [
+  ['Borrowed Today', RECORDS.filter(r => r.at.startsWith('2026-08-06') && r.action === 'Borrow').length, 'blue'],
+  ['Returned Today', RECORDS.filter(r => r.at.startsWith('2026-08-06') && r.action === 'Return').length, 'green'],
+  ['Currently Out', INSTRUMENTS.filter(i => i.status !== 'Available').length, 'orange'],
+  ['Total Instruments', INSTRUMENTS.length, 'grey'],
+].map(([l, v, c]) => `<div class="stat"><span>${l}</span><strong class="${c}">${v}</strong></div>`).join('');
+
+const dialog = document.getElementById('detail');
+function openDetail(title, pairs) {
+  document.getElementById('d-title').textContent = title;
+  document.getElementById('d-body').innerHTML = pairs
+    .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v === '' || v == null ? '—' : v)}</dd>`).join('');
+  dialog.showModal();
+}
+document.getElementById('d-x').addEventListener('click', () => dialog.close());
+document.getElementById('d-close').addEventListener('click', () => dialog.close());
+
+function table(opts) {
+  const { title, note, columns, rows, filter, onRow, extra = '' } = opts;
+  const filterHtml = filter ? `<select id="f"><option value="">${esc(filter.label)}</option>` +
+    filter.options.map(o => `<option>${esc(o)}</option>`).join('') + '</select>' : '';
+  document.getElementById('view').innerHTML = `
+    <section class="card">
+      <div class="chead"><h2>${esc(title)}</h2><span class="note">${esc(note)}</span></div>
+      <div class="toolbar">
+        <input type="search" id="q" placeholder="Search…" autocomplete="off">
+        ${filterHtml}
+        <button class="btn" id="reset">Reset</button>
+        <span class="note" id="count"></span>
       </div>
-      <a class="btn-secondary" href="index.html">Open interactive demo</a>
-    </section>
+      <div class="wrap"><table>
+        <thead><tr>${columns.map(c => `<th>${esc(c.label)}</th>`).join('')}</tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+    </section>` + extra;
+  const q = document.getElementById('q');
+  const f = document.getElementById('f');
+  const tbody = document.getElementById('tbody');
+  const count = document.getElementById('count');
+  function apply() {
+    const term = q.value.trim().toLowerCase();
+    const fv = f ? f.value : '';
+    const shown = rows.filter(r =>
+      (!term || Object.values(r).join(' ').toLowerCase().includes(term)) &&
+      (!fv || String(r[filter.key]) === fv));
+    count.textContent = shown.length + ' of ' + rows.length + ' records';
+    tbody.innerHTML = shown.length
+      ? shown.map((r, i) => `<tr data-i="${i}">` +
+          columns.map(c => `<td>${c.render ? c.render(r) : esc(r[c.key])}</td>`).join('') + '</tr>').join('')
+      : `<tr><td colspan="${columns.length}"><div class="empty">No records match the current search or filter.</div></td></tr>`;
+    tbody.querySelectorAll('tr[data-i]').forEach(tr =>
+      tr.addEventListener('click', () => onRow(shown[Number(tr.dataset.i)])));
+  }
+  q.addEventListener('input', apply);
+  if (f) f.addEventListener('change', apply);
+  document.getElementById('reset').addEventListener('click', () => { q.value = ''; if (f) f.value = ''; apply(); });
+  apply();
+}
 
-    <section class="stats">
-      <div class="stat">Total instruments <b>84</b></div>
-      <div class="stat">Available <b>61</b></div>
-      <div class="stat">In use on site <b>12</b></div>
-      <div class="stat">On external loan <b>9</b></div>
-      <div class="stat">Under maintenance <b>2</b></div>
-    </section>
+const VIEWS = {
+  register: { label:'Instrument Register', render() {
+    table({
+      title:'Instruments', note:'Search by name, code, category or location',
+      columns:[
+        { key:'code', label:'Code' }, { key:'name', label:'Instrument' },
+        { key:'category', label:'Category' },
+        { label:'Status', render:r => `<span class="pill ${SPILL[r.status]}">${esc(r.status)}</span>` },
+        { key:'location', label:'Location' },
+      ],
+      rows: INSTRUMENTS,
+      filter:{ key:'category', label:'All categories', options:[...new Set(INSTRUMENTS.map(i => i.category))] },
+      onRow: r => openDetail(r.name, [['Code',r.code],['Category',r.category],['Status',r.status],
+        ['Location',r.location],['Label','QR code printed from the admin screen']]),
+    });
+  }},
 
-    <section class="grid" style="margin-bottom:18px;">
-      <div class="card"><h3>QR labels</h3><p>Generate QR codes in batches and scan a label to open the relevant instrument workflow.</p></div>
-      <div class="card"><h3>Status management</h3><p>Track available, on-site, external loan, maintenance, and retired states.</p></div>
-      <div class="card"><h3>Loan history</h3><p>Record borrower, date, contact details, and return status for later review.</p></div>
-    </section>
+  records: { label:'Loan Records', render() {
+    table({
+      title:'Borrow and Return History', note:'Filter by on-site use or external loan',
+      columns:[
+        { key:'at', label:'Time' }, { key:'name', label:'Instrument' }, { key:'code', label:'Code' },
+        { key:'borrower', label:'Borrower' }, { key:'kind', label:'Type' },
+        { label:'Action', render:r => `<span class="pill ${APILL[r.action]}">${esc(r.action)}</span>` },
+        { key:'note', label:'Note' },
+      ],
+      rows: RECORDS,
+      filter:{ key:'kind', label:'All types', options:['On site','External'] },
+      onRow: r => openDetail(r.name + ' · ' + r.action, [['Time',r.at],['Code',r.code],
+        ['Borrower',r.borrower],['Type',r.kind],['Action',r.action],['Note',r.note]]),
+    });
+  }},
 
-    <table>
-      <thead><tr><th>ID</th><th>Instrument</th><th>Category</th><th>Location</th><th>Status</th><th>Current borrower</th></tr></thead>
-      <tbody>
-        <tr><td>VL-DEMO-001</td><td>Violin</td><td>Strings</td><td>Cabinet A</td><td><span class="badge available">Available</span></td><td>-</td></tr>
-        <tr><td>VC-DEMO-004</td><td>Cello</td><td>Strings</td><td>Cabinet B</td><td><span class="badge venue">In use on site</span></td><td>Demo Student</td></tr>
-        <tr><td>FL-DEMO-002</td><td>Flute</td><td>Woodwinds</td><td>Cabinet C</td><td><span class="badge borrowed">External loan</span></td><td>Demo Ensemble</td></tr>
-      </tbody>
-    </table>
-  </main>
+  labels: { label:'QR Labels', render() {
+    document.getElementById('view').innerHTML = `
+      <section class="card">
+        <div class="chead"><h2>Printable QR Labels</h2><span class="note">Select a label to see what a scan resolves to</span></div>
+        <div class="grid" id="grid"></div>
+      </section>`;
+    document.getElementById('grid').innerHTML = INSTRUMENTS.map((i, idx) =>
+      `<div class="tile" data-i="${idx}"><div class="qr"></div><h3>${esc(i.name)}</h3>
+       <p>${esc(i.code)}<br>${esc(i.category)} · ${esc(i.status)}</p></div>`).join('');
+    document.querySelectorAll('.tile').forEach(t => t.addEventListener('click', () => {
+      const i = INSTRUMENTS[Number(t.dataset.i)];
+      openDetail('Scan result — ' + i.name, [['Code',i.code],['Category',i.category],
+        ['Status',i.status],['Location',i.location],
+        ['Next action', i.status === 'Available' ? 'Offer borrow workflow' : 'Offer return workflow']]);
+    }));
+  }},
+
+  calendar: { label:'Loan Calendar', render() {
+    const cells = [];
+    const first = new Date('2026-08-01T00:00:00');
+    const lead = first.getDay();
+    for (let i = 0; i < lead; i++) cells.push(null);
+    for (let d = 1; d <= 31; d++) cells.push('2026-08-' + String(d).padStart(2, '0'));
+    while (cells.length % 7) cells.push(null);
+
+    document.getElementById('view').innerHTML = `
+      <section class="card">
+        <div class="chead"><h2>August 2026 — Scheduled Loans</h2><span class="note">Select an entry for detail</span></div>
+        <div class="cal">
+          ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="dow">${d}</div>`).join('')}
+          ${cells.map(date => {
+            if (!date) return '<div class="day dim"></div>';
+            const evs = PLANNED.filter(p => date >= p.from && date <= p.to);
+            return `<div class="day"><div class="n">${Number(date.slice(-2))}</div>` +
+              evs.map(p => `<div class="ev ${p.kind === 'External' ? 'ext' : ''}" data-code="${esc(p.code)}">${esc(p.name)}</div>`).join('') +
+              '</div>';
+          }).join('')}
+        </div>
+      </section>`;
+    document.querySelectorAll('.ev').forEach(e => e.addEventListener('click', () => {
+      const p = PLANNED.find(x => x.code === e.dataset.code);
+      openDetail(p.name, [['Code',p.code],['Borrower',p.borrower],['Type',p.kind],
+        ['From',p.from],['To',p.to],['Note',p.note]]);
+    }));
+  }},
+};
+
+const tabs = document.getElementById('tabs');
+tabs.innerHTML = Object.keys(VIEWS).map(k => `<button class="tab" data-k="${k}">${esc(VIEWS[k].label)}</button>`).join('');
+function show(k) {
+  tabs.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.k === k));
+  VIEWS[k].render();
+}
+tabs.addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) show(b.dataset.k); });
+show('register');
+</script>
 </body>
 </html>
